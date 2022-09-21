@@ -103,7 +103,7 @@ contract BasicStakingContract {
     /// @notice Start a stake by depositing the required minimum tokens into the contract
     /// @dev modifier noActiveStake present to make sure user doesn't already have a stale present
     /// @param _stakeAmount the amount of tokens the user is willing to stake
-    function stake(uint256 _stakeAmount) external noActiveStake {
+    function stake(uint256 _stakeAmount) external payable noActiveStake {
         require(_stakeAmount >= minimumStake, "Staked amount too low");
         Erc20Utils.addTokensToContract(stakingToken, payable(msg.sender), _stakeAmount);
         UserStake memory _stake = UserStake(_stakeAmount, block.number, msg.sender, 0, true);
@@ -116,7 +116,7 @@ contract BasicStakingContract {
     function claim() external activeStake {
         uint claimableTokens = getClaimableToken(msg.sender);
         require(claimableTokens > 0, "0 claimable tokens present");
-        UserStake memory _stake = stakeMap[msg.sender];
+        UserStake storage _stake = stakeMap[msg.sender];
         _stake.claimed += claimableTokens;
         withdrawPool[msg.sender] += claimableTokens;
         emit Claim(msg.sender, claimableTokens);
@@ -125,7 +125,7 @@ contract BasicStakingContract {
     /// @notice Unstake your tokens and exit the stake
     /// @dev The contract claims tokens for the users and adds the available claim to the withdrawPool in addition to the staked amount
     function unstake() external activeStake {
-        UserStake memory _stake = stakeMap[msg.sender];
+        UserStake storage _stake = stakeMap[msg.sender];
         uint claimableTokens = getClaimableToken(msg.sender);
         if (claimableTokens > 0) {
             _stake.claimed += claimableTokens;
@@ -134,7 +134,7 @@ contract BasicStakingContract {
         }
         _stake.stakeStatus = false;
         _stake.stakeStartBlockNumber = 0;
-        _stake.claimed += 0;
+        _stake.claimed = 0;
         uint stakeAmt = _stake.stakeAmount;
         _stake.stakeAmount = 0;
         withdrawPool[msg.sender] += stakeAmt;
