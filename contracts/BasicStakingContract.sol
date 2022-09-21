@@ -5,7 +5,7 @@ pragma solidity >=0.7.0;
 /// @notice Simple Staking and rewards program for any ERC20 compatible token
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./Utils/ERC20Utils.sol";
+import "./utils/ERC20Utils.sol";
 
 contract BasicStakingContract {
     struct UserStake {
